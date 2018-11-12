@@ -1,0 +1,7 @@
+*.pyc
+calcs/.ipynb_checkpoints/*
+logs/*
+.DS_Store
+scratch/*
+dask-jlab.*
+dask-worker.*

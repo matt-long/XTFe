@@ -1,0 +1,56 @@
+monthly: 
+    CTRL:
+      source: cesm
+      description: Default model configuration
+      open_dataset:
+        format: hist
+        dirin: '/glade/scratch/mclong/archive/g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001/ocn/hist'
+        case: g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001
+        stream: pop.h
+        datestr: '0005-??'
+    IceFe-allsol:
+      source: cesm
+      description: Default model configuration w/ seaice_fe_bioavail_frac = 1
+      open_dataset:
+        format: hist
+        dirin: '/glade/scratch/mclong/archive/g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001/ocn/hist'
+        case: g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001
+        stream: pop.h
+        datestr: '0005-??'
+    #XT-FE-ice-only:
+    #  source: cesm
+    #  description: Extraterrestrial Fe deposited only on sea ice
+    #  open_dataset:
+    #    format: hist
+    #    dirin: '/glade/scratch/mclong/archive/g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.002/ocn/hist'
+    #    case: g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.002
+    #    stream: pop.h
+    #    datestr: '0005-??'
+    XT-FE:
+      source: cesm
+      description: Extraterrestrial Fe
+      open_dataset:
+        format: hist
+        dirin: '/glade/scratch/mclong/archive/g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.003/ocn/hist'
+        case: g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.003
+        stream: pop.h
+        datestr: '0005-??'
+budgets:
+    CTRL:
+      source: cesm
+      description: Default model configuration
+      open_dataset:
+        format: hist
+        dirin: '/glade/scratch/mclong/archive/g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001/ocn/hist'
+        case: g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001
+        stream: pop.h.ecosys.nyear1
+        datestr: '0005'
+    XT-FE:
+      source: cesm
+      description: Extraterrestrial Fe
+      open_dataset:
+        format: hist
+        dirin: '/glade/scratch/mclong/archive/g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.003/ocn/hist'
+        case: g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.003
+        stream: pop.h.ecosys.nyear1
+        datestr: '0005'
