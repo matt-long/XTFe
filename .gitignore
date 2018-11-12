@@ -1,5 +1,6 @@
 *.pyc
 calcs/.ipynb_checkpoints/*
+cesm_runs/.ipynb_checkpoints/*
 logs/*
 .DS_Store
 scratch/*
