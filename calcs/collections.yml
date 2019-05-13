@@ -1,4 +1,4 @@
-monthly: 
+monthly:
     CTRL:
       source: cesm
       description: Default model configuration
@@ -7,16 +7,17 @@ monthly:
         dirin: '/glade/scratch/mclong/archive/g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001/ocn/hist'
         case: g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001
         stream: pop.h
-        datestr: '0005-??'
-    IceFe-allsol:
-      source: cesm
-      description: Default model configuration w/ seaice_fe_bioavail_frac = 1
-      open_dataset:
-        format: hist
-        dirin: '/glade/scratch/mclong/archive/g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001/ocn/hist'
-        case: g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001
-        stream: pop.h
-        datestr: '0005-??'
+        datestr: '????-??'
+    #IceFe-allsol:
+    #  source: cesm
+    #  description: Default model configuration w/ seaice_fe_bioavail_frac = 1
+    #  notes: ran 5 years, but blew away the data
+    #  open_dataset:
+    #    format: hist
+    #    dirin: '/glade/scratch/mclong/archive/g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.002/ocn/hist'
+    #    case: g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.002
+    #    stream: pop.h
+    #    datestr: '0010-??'
     #XT-FE-ice-only:
     #  source: cesm
     #  description: Extraterrestrial Fe deposited only on sea ice
@@ -28,13 +29,23 @@ monthly:
     #    datestr: '0005-??'
     XT-FE:
       source: cesm
-      description: Extraterrestrial Fe
+      description: Extraterrestrial Fe deposited on ocean and ice
       open_dataset:
         format: hist
         dirin: '/glade/scratch/mclong/archive/g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.003/ocn/hist'
         case: g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.003
         stream: pop.h
-        datestr: '0005-??'
+        datestr: '????-??'
+    #XT-FE-no-ice:
+    #  source: cesm
+    #  description: Extraterrestrial Fe deposited on ocean, no XTFe flux passed from the ice
+    #  notes: data moved to HPSS
+    #  open_dataset:
+    #    format: hist
+    #    dirin: '/glade/scratch/mclong/archive/g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.004/ocn/hist'
+     #   case: g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.004
+     #   stream: pop.h
+     #   datestr: '0010-??'
 budgets:
     CTRL:
       source: cesm
@@ -44,7 +55,7 @@ budgets:
         dirin: '/glade/scratch/mclong/archive/g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001/ocn/hist'
         case: g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001
         stream: pop.h.ecosys.nyear1
-        datestr: '0005'
+        datestr: '0010'
     XT-FE:
       source: cesm
       description: Extraterrestrial Fe
@@ -53,4 +64,4 @@ budgets:
         dirin: '/glade/scratch/mclong/archive/g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.003/ocn/hist'
         case: g.e21a01d.xtFe.G1850ECOIAF.T62_g17.extraterr-fe.003
         stream: pop.h.ecosys.nyear1
-        datestr: '0005'
+        datestr: '0010'

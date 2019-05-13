@@ -27,15 +27,15 @@ walltime = '12:00:00'
 queue = 'regular'
 
 cesm_repo = 'https://github.com/escomp/cesm.git'
-sandbox = 'cesm2_1'
-coderoot = os.path.join('/glade/work','mclong','codes',sandbox)
+sandbox = 'cesm2_1_extraterr_fe'
+coderoot = os.path.join('/glade/work',os.environ['USER'],'codes',sandbox)
 
 tag = 'cesm2_1_alpha01d'
-compref = 'g.e21a01d'
+compref = 'g.e21a01d.xtFe'
 
 res = 'T62_g17'
-ens = 5
-source_mod_dir = ''
+ens = 4
+source_mod_dir = 'no-ice-flux'
 note = project_name
 compset = 'G1850ECOIAF'
 mach = 'cheyenne'
@@ -56,9 +56,9 @@ if not os.path.exists(caserootroot):
 #---- init and forcing
 #-------------------------------------------------------------------------------
 
-run_refcase = 'g.e21a01d.G1850ECOIAF.T62_g17.extraterr-fe.001'
-run_refdate = '0301-01-01'
-refcase_root= os.path.join('/glade/scratch/mclong/archive',
+run_refcase = ''
+run_refdate = '0281-01-01'
+refcase_root= os.path.join('/glade/p/cesm/bgcwg_dev/hpss-mirror',
                            run_refcase,'rest',run_refdate+'-00000')
 
 #----------------------------------------------------------------------
@@ -229,4 +229,4 @@ xmlchange({'STOP_N' : 10,
 stat = call(['qcmd','-A',project_code,'--','./case.build'])
 if stat != 0: exit(1)
 
-#call(['./case.submit'])
+call(['./case.submit'])
