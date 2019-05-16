@@ -44,19 +44,16 @@ def pop_add_cyclic(ds):
     
     dso = xr.Dataset({'TLAT': TLAT, 'TLONG': TLONG})
 
-    # copy coords
-    for v, da in ds.coords.items():
-        if not ('nlat' in da.dims and 'nlon' in da.dims):
-            dso = dso.assign_coords(**{v: da})
-    
     # copy vars
     varlist = [v for v in ds.data_vars if v not in ['TLAT', 'TLONG']]
     for v in varlist:
-        v_dims = set(ds[v].dims)
+        v_dims = ds[v].dims
         if not ('nlat' in v_dims and 'nlon' in v_dims):
             dso[v] = ds[v]
         else:
-            other_dims = tuple(v_dims - {'nlat', 'nlon'})
+            # determine and sort other dimensions
+            other_dims = set(v_dims) - {'nlat', 'nlon'}
+            other_dims = tuple([d for d in v_dims if d in other_dims])
             lon_dim = ds[v].dims.index('nlon')
             field = ds[v].data
             field = np.concatenate((field, field), lon_dim)
@@ -65,6 +62,13 @@ def pop_add_cyclic(ds):
             dso[v] = xr.DataArray(field, dims=other_dims+('nlat', 'nlon'), 
                                   attrs=ds[v].attrs)
 
+
+    # copy coords
+    for v, da in ds.coords.items():
+        if not ('nlat' in da.dims and 'nlon' in da.dims):
+            dso = dso.assign_coords(**{v: da})
+                
+            
     return dso
 
 
@@ -116,7 +120,8 @@ def open_cesm_data(col, data_vars, time_slice=None):
                 filename = cat_query.query_results.file_fullpath.tolist()
                 
                 ds = xr.open_mfdataset(filename, decode_times=False, 
-                                       decode_coords=False)
+                                       decode_coords=False, 
+                                       chunks={'time': 12, 'z_t': 20})
                 
                 ds_mergelist.append(ds)
 
@@ -175,4 +180,8 @@ def open_cesm_data(col, data_vars, time_slice=None):
             ds['SEAICE_XTFE_FLUX_CPL'] = ds.SEAICE_XTFE_FLUX_CPL / molw_Fe * 1e4 * 86400. * 365.
             ds.SEAICE_XTFE_FLUX_CPL.attrs['units'] = 'mol m$^{-2}$ yr$^{-1}$'
 
+        if 'Fe' in ds.variables:
+            ds['Fe'] = ds.Fe * 1e3
+            ds.Fe.attrs['units'] = 'nM'
+            ds.Fe.attrs['long_name'] = 'dFe'
     return ds
