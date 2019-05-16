@@ -5,4 +5,5 @@ logs/*
 .DS_Store
 scratch/*
 dask-jlab.*
-dask-worker.*
+dask-worker.*.ipynb_checkpoints
+.ipynb_checkpoints/*

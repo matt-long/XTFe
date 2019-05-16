@@ -1,0 +1,150 @@
+collections:
+  cesm:
+    collection_columns:
+    - resource
+    - resource_type
+    - direct_access
+    - description
+    - experiment
+    - case
+    - component
+    - stream
+    - variable
+    - date_range
+    - ensemble
+    - file_fullpath
+    - file_basename
+    - file_dirname
+    - ctrl_branch_year
+    - year_offset
+    - sequence_order
+    - has_ocean_bgc
+    - grid
+    order_by_columns:
+      - sequence_order
+      - file_fullpath
+    required_columns:
+      - sequence_order
+      - file_fullpath
+    component_streams:
+      atm:
+      - cam.h0
+      - cam.h1
+      - cam.h2
+      - cam.h3
+      - cam.h4
+      - cam.h5
+      - cam.h6
+      - cam.h7
+      - cam.h8
+      glc:
+      - cism.h
+      - cism.h0
+      - cism.h1
+      - cism.h2
+      - cism.h3
+      - cism.h4
+      - cism.h5
+      - cism.h6
+      - cism.h7
+      - cism.h8
+      ice:
+      - cice.h2_06h
+      - cice.h1
+      - cice.h
+      lnd:
+      - clm2.h0
+      - clm2.h1
+      - clm2.h2
+      - clm2.h3
+      - clm2.h4
+      - clm2.h5
+      - clm2.h6
+      - clm2.h7
+      - clm2.h8
+      ocn:
+      - pop.h.nday1
+      - pop.h.nyear1
+      - pop.h.ecosys.nday1
+      - pop.h.ecosys.nyear1
+      - pop.h
+      - pop.h.sigma
+      rof:
+      - rtm.h0
+      - rtm.h1
+      - rtm.h2
+      - rtm.h3
+      - rtm.h4
+      - rtm.h5
+      - rtm.h6
+      - rtm.h7
+      - rtm.h8
+      - mosart.h0
+      - mosart.h1
+      - mosart.h2
+      - mosart.h3
+      - mosart.h4
+      - mosart.h5
+      - mosart.h6
+      - mosart.h7
+      - mosart.h8
+    replacements:
+      freq:
+        daily: day_1
+        monthly: month_1
+        yearly: year_1
+  cmip5:
+    collection_columns:
+    - activity
+    - ensemble_member
+    - experiment
+    - file_basename
+    - file_dirname
+    - file_fullpath
+    - frequency
+    - institute
+    - mip_table
+    - model
+    - modeling_realm
+    - product
+    - temporal_subset
+    - variable
+    - version
+    order_by_columns:
+      - file_fullpath
+    required_columns:
+      - modeling_realm
+      - frequency
+      - ensemble_member
+      - experiment
+      - file_fullpath
+  cmip6:
+    collection_columns:
+    - activity_id
+    - experiment_id
+    - file_basename
+    - file_dirname
+    - file_fullpath
+    - grid_label
+    - institution_id
+    - member_id
+    - mip_era
+    - source_id
+    - table_id
+    - time_range
+    - variable_id
+    - version
+    order_by_columns:
+      - member_id
+      - file_fullpath
+    required_columns:
+      - member_id
+      - experiment_id
+      - file_fullpath
+default_chunk_size: 128MiB
+data_cache_directory: /glade/scratch/${USER}/intake-esm-data
+database_directory: ./intake-collections
+sources:
+  cesm: intake_esm.cesm.CESMSource
+  cmip5: intake_esm.cmip.CMIP5Source
+  cmip6: intake_esm.cmip.CMIP6Source
