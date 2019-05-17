@@ -273,11 +273,11 @@ contains
             x2o(index_x2o_Fioi_flxdst,n))
 
         ! convert Fe flux from MKS (kg/m^2/s) to CGS (g/cm^2/s)
-        SEAICE_XTFE_FLUX(i,j,iblock) = c0
+        SEAICE_XTFE_FLUX(i,j,iblock) = 0.1_r8 * RCALCT(i,j,iblock) * ( &
+           x2o(index_x2o_Fioi_xtFe_ice_rxn,n))
 
          ! convert Fe flux from MKS (kg/m^2/s) to CGS (g/cm^2/s)
-         ATM_XTFE_FLUX(i,j,iblock) = 0.1_r8 * RCALCT(i,j,iblock) * ( &
-           x2o(index_x2o_Faxa_xtFe,n))
+         ATM_XTFE_FLUX(i,j,iblock) = c0
 
          ! convert black carbon flux from MKS (kg/m^2/s) to CGS (g/cm^2/s)
          ATM_BLACK_CARBON_FLUX(i,j,iblock) = 0.1_r8 * RCALCT(i,j,iblock) * ( &

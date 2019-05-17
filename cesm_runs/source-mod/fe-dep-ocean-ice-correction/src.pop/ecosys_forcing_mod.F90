@@ -427,7 +427,7 @@ contains
     dust_flux_source             = 'monthly-calendar'
     call set_defaults_tracer_read(dust_flux_input, file_varname='dust_flux')
     iron_flux_source             = 'monthly-calendar'
-    dust_ratio_thres             = 55.0_r8
+    dust_ratio_thres             = 66.28178906901309_r8
     call set_defaults_tracer_read(iron_flux_input, file_varname='iron_flux')
     call set_defaults_tracer_read(fesedflux_input, file_varname='FESEDFLUXIN')
     call set_defaults_tracer_read(feventflux_input, file_varname='FESEDFLUXIN')
@@ -1738,8 +1738,8 @@ contains
 
     real      (r8)                 :: atm_fe_bioavail_frac(nx_block, ny_block)
     real      (r8)                 :: seaice_fe_bioavail_frac(nx_block, ny_block)
-    real      (r8), parameter      :: dust_ratio_to_fe_bioavail_frac = 1.0_r8 / 170.0_r8
-    real      (r8), parameter      :: fe_bioavail_frac_offset = 0.01_r8
+    real      (r8), parameter      :: dust_ratio_to_fe_bioavail_frac = 1.0_r8 / 400.0_r8
+    real      (r8), parameter      :: fe_bioavail_frac_offset = 0.013187494288942338_r8
 
     !-----------------------------------------------------------------------
 
@@ -1980,7 +1980,7 @@ contains
 
                    ! add component from seaice
 
-                   seaice_fe_bioavail_frac(:,:) = c1 !atm_fe_bioavail_frac(:,:)
+                   seaice_fe_bioavail_frac(:,:) = atm_fe_bioavail_frac(:,:)
 
                    forcing_field%field_0d(:,:,iblock) = forcing_field%field_0d(:,:,iblock) + seaice_fe_bioavail_frac(:,:) * &
                         (iron_frac_in_seaice_dust * seaice_dust_flux(:,:,iblock) + &

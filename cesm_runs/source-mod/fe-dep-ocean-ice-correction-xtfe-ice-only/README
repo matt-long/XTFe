@@ -1,0 +1,8 @@
+This directory includes code modifications necessary to tune parameters of
+dust-dependent iron flux to account for non-linearities in the parameterization
+when applied to monthly-mean, ensemble mean dust fields.
+
+This code is consistent with the XTFe implementation.
+
+In this version, XTFe deposition over the ocean is zeroed out: deposition only
+occurs on sea-ice.
