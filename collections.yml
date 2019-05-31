@@ -35,3 +35,37 @@ data_sources:
         ensemble: 0
         has_ocean_bgc: True
         year_offset: 1699
+  xtfe-iceonly:
+    locations:
+      - name: scratch
+        loc_type: posix
+        direct_access: True
+        urlpath: /glade/scratch/mclong/archive/g.e21.G1850ECOIAF.T62_g17.xtfe.iceonly.001
+        exclude_dirs: ['*/hist/*', '*/rest/*']
+    component_attrs:
+      ocn:
+        grid: POP_gx1v7
+    case_members:
+      - case: g.e21.G1850ECOIAF.T62_g17.xtfe.iceonly.001
+        description: Ocean-ice hindcast, XT-Fe forcing only applied over sea-ice
+        sequence_order: 0
+        ensemble: 0
+        has_ocean_bgc: True
+        year_offset: 1699
+  xtfe-30x:
+    locations:
+      - name: scratch
+        loc_type: posix
+        direct_access: True
+        urlpath: /glade/scratch/mclong/archive/g.e21.G1850ECOIAF.T62_g17.xtfe-30x.001
+        exclude_dirs: ['*/hist/*', '*/rest/*']
+    component_attrs:
+      ocn:
+        grid: POP_gx1v7
+    case_members:
+      - case: g.e21.G1850ECOIAF.T62_g17.xtfe-30x.001
+        description: Ocean-ice hindcast, XT-Fe forcing 100% soluble, applied 30x multiplier
+        sequence_order: 0
+        ensemble: 0
+        has_ocean_bgc: True
+        year_offset: 1699        

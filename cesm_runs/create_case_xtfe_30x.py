@@ -36,7 +36,7 @@ res = 'T62_g17'
 ens = 1
 
 source_mod_dir = 'source-mod/fe-dep-ocean-ice-correction-xtfe-30x'
-note = 'xtfe'
+note = 'xtfe-30x'
 compset = 'G1850ECOIAF'
 mach = 'cheyenne'
 
@@ -80,7 +80,7 @@ case = defcase(compref=compref,
 rundir = os.path.join(case.path['exe'], 'run')
 
 case_desc_file = 'case-description/'+case.name+'.description'
-assert not os.path.exists(case_desc_file)
+assert not os.path.exists(case_desc_file), case_desc_file+' exists'
 with open(case_desc_file, 'w') as f:
     f.write(description)
 
