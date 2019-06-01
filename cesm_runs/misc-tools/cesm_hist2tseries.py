@@ -5,6 +5,7 @@ import os
 from subprocess import check_call, Popen, PIPE
 from glob import glob
 import re
+import click
 
 import yaml
 import tempfile
@@ -19,8 +20,16 @@ logging.basicConfig(level=logging.INFO)
 
 TEST = False
 
-globus_campaign = '6b5ab960-7bbf-11e8-9450-0a6d4e044368'
-globus_glade = 'd33b3614-6d04-11e5-ba46-22000b92c6ec'
+script_dir = os.path.dirname(__file__)
+
+GLOBUS_CAMPAIGN = '6b5ab960-7bbf-11e8-9450-0a6d4e044368'
+GLOBUS_GLADE = 'd33b3614-6d04-11e5-ba46-22000b92c6ec'
+GLOBUS_CAMPAIGN_PATH = '/gpfs/csfs1/cesm/development/bgcwg/projects/xtFe/cases'
+
+USER = os.environ['USER']
+ARCHIVE_ROOT = f'/glade/scratch/{USER}/archive'
+
+tm.ACCOUNT = 'NCGD0011'
 
 def globus(cmd, arg):
     if not isinstance(arg, list):
@@ -84,10 +93,27 @@ def get_vars(files):
     return static_vars, time_vars
 
 
-def main(case, droot, components, only_streams=[], campaign_transfer=False,
-         slurmit=True, demo=False, clobber=False):
 
-    with open('cesm_streams.yml') as f:
+@click.command()
+@click.argument('case')
+@click.option('--components', default='ocn')
+@click.option('--archive-root', default=ARCHIVE_ROOT)
+@click.option('--only-streams', default=[])
+@click.option('--campaign-transfer', default=False, is_flag=True)
+@click.option('--campaign-path', default=GLOBUS_CAMPAIGN_PATH)
+@click.option('--demo', default=False, is_flag=True)
+@click.option('--clobber', default=False, is_flag=True)
+def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_streams=[],
+         campaign_transfer=False, campaign_path=None, demo=False, clobber=False):
+
+    droot = os.path.join(archive_root, case)
+    if isinstance(components, str):
+        components = components.split(',')
+
+    if campaign_transfer and campaign_path is None:
+        raise ValueError('campaign path required')
+
+    with open(f'{script_dir}/cesm_streams.yml') as f:
         streams = yaml.safe_load(f)
 
     for component in components:
@@ -108,7 +134,7 @@ def main(case, droot, components, only_streams=[], campaign_transfer=False,
             # set target destination on globus
             globus_file_list = []
             if campaign_transfer:
-                campaign_dout = f'{globus_campaign}:{globus_campaign_path}'
+                campaign_dout = f'{GLOBUS_CAMPAIGN}:{campaign_path}'
                 additions = [case, component, 'proc', 'tseries', freq]
                 for add in additions:
                     campaign_dout = f'{campaign_dout}/{add}'
@@ -176,7 +202,7 @@ def main(case, droot, components, only_streams=[], campaign_transfer=False,
                     if campaign_transfer:
                         label = file_cat_basename.replace('.', ' ').replace('-', ' ')
                         xfr_cmd = ['globus', 'transfer',
-                                   f'{globus_glade}:{file_cat}',
+                                   f'{GLOBUS_GLADE}:{file_cat}',
                                    f'{campaign_dout}/{file_cat_basename}',
                                    '--label', f'"{label}"']
 
@@ -193,7 +219,7 @@ def main(case, droot, components, only_streams=[], campaign_transfer=False,
                     jid = tm.submit([cat_cmd, compress_cmd,
                                      xfr_cmd, wait_cmd,
                                      cleanup_cmd],
-                                    modules=['nco'], memory='100GB')
+                                     modules=['nco'], memory='100GB')
 
 
 
@@ -204,24 +230,4 @@ def main(case, droot, components, only_streams=[], campaign_transfer=False,
     tm.wait()
 
 if __name__ == '__main__':
-
-    tm.ACCOUNT = 'NCGD0011'
-    slurmit = True
-    demo = False
-
-    #-- specify case details
-    clobber = False
-    archive_root = '/glade/scratch/mclong/archive'
-    case = 'g.e21.G1850ECOIAF.T62_g17.004'
-    droot = os.path.join(archive_root, case)
-
-
-    campaign_transfer = False
-    globus_campaign_path = '/gpfs/csfs1/cesm/development/omwg/projects/omip/cases'
-
-    components = ['ocn']
-
-    main(case, droot, components, only_streams=[],
-         campaign_transfer=campaign_transfer,
-         slurmit=slurmit,
-         demo=demo, clobber=clobber)
+    main()
