@@ -6,6 +6,7 @@ from subprocess import check_call, Popen, PIPE
 from glob import glob
 import re
 import click
+from datetime import datetime
 
 import yaml
 import tempfile
@@ -29,6 +30,7 @@ USER = os.environ['USER']
 ARCHIVE_ROOT = f'/glade/scratch/{USER}/archive'
 
 tm.ACCOUNT = 'NCGD0011'
+tm.MAXJOBS = 30
 
 xr_open = dict(decode_times=False, decode_coords=False)
 
@@ -139,6 +141,12 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
         year_groups = year_groups.split(',')
         year_groups = [tuple(int(i) for i in ygi.split(':')) for ygi in year_groups]
 
+    if year_groups is None:
+        year_groups = [(-1e36, 1e36)]
+
+    if isinstance(only_streams, str):
+        only_streams = only_streams.split(',')
+
     logging.info('constructing time-series of the following year groups:')
     logging.info(year_groups)
     print()
@@ -146,12 +154,22 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
     with open(f'{script_dir}/cesm_streams.yml') as f:
         streams = yaml.safe_load(f)
 
+
+    datestamp = datetime.now().strftime('%Y%m%d-%HH%M%S')
+
     for component in components:
-        print('working on component: {component}')
+        print('='*80)
+        logging.info(f'working on component: {component}')
+        print('='*80)
         for stream, stream_info in streams[component].items():
+
             if only_streams:
                 if stream not in only_streams:
                     continue
+
+            print('-'*80)
+            logging.info(f'working on stream: {stream}')
+            print('-'*80)
 
             dateglob = stream_info['dateglob']
             dateregex = stream_info['dateregex']
@@ -182,6 +200,8 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
                     print(stderr)
                     raise Exception('globus "ls" failed')
                 globus_file_list = stdout.split('\n')
+                logging.info(f'found {len(globus_file_list)} files on campaign.')
+
 
             # get input files
             files = sorted(glob(f'{droot}/{component}/hist/{case}.{stream}.{dateglob}.nc'))
@@ -189,17 +209,17 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
                 logging.warning(f'no files: component={component}, stream={stream}')
                 continue
 
-            logging.info(f'component={component}, stream={stream}: nfile = {len(files)}')
+            # get file dates
+            files_year = [get_year_filename(f) for f in files]
 
             # get variable lists
             static_vars, time_vars = get_vars(files)
 
-            logging.info('getting dates for all files')
-
-            files_year = [get_year_filename(f) for f in files]
-
-            if year_groups is None:
-                year_groups = [(file_years[0], file_years[-1])]
+            # make a report
+            logging.info(f'found {len(files)} history files')
+            logging.info(f'history file years: {min(files_year)}-{max(files_year)}')
+            logging.info(f'found {len(time_vars)} variables to process')
+            logging.info(f'expecting to generate {len(time_vars) * len(year_groups)} timeseries files')
 
             for y0, yf in year_groups:
                 logging.info(f'working on year group {y0}-{yf}')
@@ -236,10 +256,14 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
 
                     if not demo:
                         if campaign_transfer:
+                            with open(f'timeseries-files-done.{datestamp}', 'a') as f:
+                                f.write(f'{file_cat_basename}\n')
+
                             label = file_cat_basename.replace('.', ' ').replace('-', ' ')
                             xfr_cmd = ['globus', 'transfer',
                                        f'{GLOBUS_GLADE}:{file_cat}',
                                        f'{campaign_dout}/{file_cat_basename}',
+                                       '--notify', 'failed,inactive',
                                        '--label', f'"{label}"']
 
                             xfr_cmd = ' '.join(xfr_cmd)
