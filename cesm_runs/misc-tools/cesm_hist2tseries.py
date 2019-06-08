@@ -6,7 +6,6 @@ from subprocess import check_call, Popen, PIPE
 from glob import glob
 import re
 import click
-from datetime import datetime
 
 import yaml
 import tempfile
@@ -155,8 +154,6 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
         streams = yaml.safe_load(f)
 
 
-    datestamp = datetime.now().strftime('%Y%m%d-%HH%M%S')
-
     for component in components:
         print('='*80)
         logging.info(f'working on component: {component}')
@@ -256,9 +253,6 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
 
                     if not demo:
                         if campaign_transfer:
-                            with open(f'timeseries-files-done.{datestamp}', 'a') as f:
-                                f.write(f'{file_cat_basename}\n')
-
                             label = file_cat_basename.replace('.', ' ').replace('-', ' ')
                             xfr_cmd = ['globus', 'transfer',
                                        f'{GLOBUS_GLADE}:{file_cat}',
