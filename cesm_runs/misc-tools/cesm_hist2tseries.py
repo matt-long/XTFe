@@ -2,6 +2,7 @@
 """Make history files into timeseries"""
 
 import os
+import sys
 from subprocess import check_call, Popen, PIPE
 from glob import glob
 import re
@@ -15,35 +16,26 @@ import cftime
 import xarray as xr
 import numpy as np
 
+import globus
 from workflow import task_manager as tm
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel(level=logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
-script_dir = os.path.dirname(__file__)
+script_path = os.path.dirname(os.path.realpath(__file__))
 
-GLOBUS_CAMPAIGN = '6b5ab960-7bbf-11e8-9450-0a6d4e044368'
-GLOBUS_GLADE = 'd33b3614-6d04-11e5-ba46-22000b92c6ec'
 GLOBUS_CAMPAIGN_PATH = '/gpfs/csfs1/cesm/development/bgcwg/projects/xtFe/cases'
 
 USER = os.environ['USER']
 ARCHIVE_ROOT = f'/glade/scratch/{USER}/archive'
 
 tm.ACCOUNT = 'NCGD0011'
-tm.MAXJOBS = 30
+tm.MAXJOBS = 100
 
 xr_open = dict(decode_times=False, decode_coords=False)
-
-def globus(cmd, arg):
-    if not isinstance(arg, list):
-        arg = [arg]
-    cmd = ['globus', cmd] + arg
-    print(cmd)
-    p = Popen(cmd, stdout=PIPE, stderr=PIPE)
-    stdout, stderr = p.communicate()
-    stdout = stdout.decode('UTF-8')
-    stderr = stderr.decode('UTF-8')
-    ok = p.returncode == 0
-    return ok
 
 def get_year_filename(file):
     """Get the year from the datestr part of a file."""
@@ -146,17 +138,17 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
     if isinstance(only_streams, str):
         only_streams = only_streams.split(',')
 
-    logging.info('constructing time-series of the following year groups:')
-    logging.info(year_groups)
+    logger.info('constructing time-series of the following year groups:')
+    logger.info(year_groups)
     print()
 
-    with open(f'{script_dir}/cesm_streams.yml') as f:
+    with open(f'{script_path}/cesm_streams.yml') as f:
         streams = yaml.safe_load(f)
 
 
     for component in components:
         print('='*80)
-        logging.info(f'working on component: {component}')
+        logger.info(f'working on component: {component}')
         print('='*80)
         for stream, stream_info in streams[component].items():
 
@@ -165,7 +157,7 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
                     continue
 
             print('-'*80)
-            logging.info(f'working on stream: {stream}')
+            logger.info(f'working on stream: {stream}')
             print('-'*80)
 
             dateglob = stream_info['dateglob']
@@ -179,31 +171,15 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
             # set target destination on globus
             globus_file_list = []
             if campaign_transfer:
-                campaign_dout = f'{GLOBUS_CAMPAIGN}:{campaign_path}'
-                additions = [case, component, 'proc', 'tseries', freq]
-                for add in additions:
-                    campaign_dout = f'{campaign_dout}/{add}'
-                    if not globus('ls', campaign_dout):
-                        globus('mkdir', campaign_dout)
-
-                # get list of files already on campaign
-                p = Popen(['globus', 'ls', campaign_dout], stdout=PIPE, stderr=PIPE)
-                stdout, stderr = p.communicate()
-                stdout = stdout.decode('UTF-8')
-                stderr = stderr.decode('UTF-8')
-                ok = p.returncode == 0
-                if not ok:
-                    print(stdout)
-                    print(stderr)
-                    raise Exception('globus "ls" failed')
-                globus_file_list = stdout.split('\n')
-                logging.info(f'found {len(globus_file_list)} files on campaign.')
-
+                campaign_dout = f'{campaign_path}/{case}/{component}/proc/tseries/{freq}'
+                globus.makedirs('campaign', campaign_dout)
+                globus_file_list = globus.listdir('campaign', campaign_dout)
+                logger.info(f'found {len(globus_file_list)} files on campaign.')
 
             # get input files
             files = sorted(glob(f'{droot}/{component}/hist/{case}.{stream}.{dateglob}.nc'))
             if len(files) == 0:
-                logging.warning(f'no files: component={component}, stream={stream}')
+                logger.warning(f'no files: component={component}, stream={stream}')
                 continue
 
             # get file dates
@@ -213,13 +189,13 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
             static_vars, time_vars = get_vars(files)
 
             # make a report
-            logging.info(f'found {len(files)} history files')
-            logging.info(f'history file years: {min(files_year)}-{max(files_year)}')
-            logging.info(f'found {len(time_vars)} variables to process')
-            logging.info(f'expecting to generate {len(time_vars) * len(year_groups)} timeseries files')
+            logger.info(f'found {len(files)} history files')
+            logger.info(f'history file years: {min(files_year)}-{max(files_year)}')
+            logger.info(f'found {len(time_vars)} variables to process')
+            logger.info(f'expecting to generate {len(time_vars) * len(year_groups)} timeseries files')
 
             for y0, yf in year_groups:
-                logging.info(f'working on year group {y0}-{yf}')
+                logger.info(f'working on year group {y0}-{yf}')
 
                 files_group_i = [f for f, y in zip(files, files_year)
                                  if (y0 <= y) and (y <= yf)]
@@ -246,36 +222,26 @@ def main(case, components=['ocn', 'ice'], archive_root=ARCHIVE_ROOT, only_stream
                             print(f'exists: {file_cat_basename}...skipping')
                             continue
 
-                    logging.info(f'creating {file_cat}')
+                    logger.info(f'creating {file_cat}')
                     vars = ','.join(static_vars+[v])
                     cat_cmd = [f'cat {tmpfile} | ncrcat -O -h -v {vars} {file_cat}']
                     compress_cmd = [f'ncks -O -4 -L 1 {file_cat} {file_cat}']
 
                     if not demo:
                         if campaign_transfer:
-                            label = file_cat_basename.replace('.', ' ').replace('-', ' ')
-                            xfr_cmd = ['globus', 'transfer',
-                                       f'{GLOBUS_GLADE}:{file_cat}',
-                                       f'{campaign_dout}/{file_cat_basename}',
-                                       '--notify', 'failed,inactive',
-                                       '--label', f'"{label}"']
+                            xfr_cmd = [f'{script_path}/globus.py',
+                                       '--src-ep=glade --dst-ep=campaign',
+                                       '--retry=3',
+                                       f'--src-paths={file_cat}',
+                                       f'--dst-paths={campaign_dout}/{file_cat_basename}']
 
-                            xfr_cmd = ' '.join(xfr_cmd)
-                            xfr_cmd = f"task_id=$({xfr_cmd} | tail -n 1 | awk -F': ' '{{print $2}}')"
-                            xfr_cmd = [xfr_cmd]
-                            wait_cmd = ['globus task wait ${task_id}']
-                            cleanup_cmd = ['rm', '-f', file_cat]
+                            cleanup_cmd = [f'if [ $? -eq 0 ]; then rm -f {file_cat}; else exit 1; fi']
                         else:
                             xfr_cmd = []
-                            wait_cmd = []
                             cleanup_cmd = []
 
-                        jid = tm.submit([cat_cmd, compress_cmd,
-                                         xfr_cmd, wait_cmd,
-                                         cleanup_cmd],
+                        jid = tm.submit([cat_cmd, compress_cmd, xfr_cmd, cleanup_cmd],
                                          modules=['nco'], memory='100GB')
-
-
 
                 print()
 
