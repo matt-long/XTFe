@@ -7,3 +7,4 @@ scratch/*
 dask-jlab.*
 dask-worker.*.ipynb_checkpoints
 .ipynb_checkpoints/*
+notes/*
